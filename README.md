@@ -1,4 +1,1 @@
-# project-go-react
-# project-go-react-v2
-# project-go-react-v2
-# project-go-react-v2
+# Basic Task Management System using Golang for backend and Typescript (using Next.js) for Front end
