@@ -3,54 +3,60 @@ import { Button, Flex, Input, Spinner } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
-import { BASE_URL } from "../App";
+import { BASE_URL } from "../Todo";
+import './todo.css';
+import { Link } from "react-router-dom";
 
 const TodoForm = () => {
 	const [newTodo, setNewTodo] = useState("");
 
 	const queryClient = useQueryClient();
 
+	// Ambil session key dari localStorage
+	const sessionKey = localStorage.getItem('sessionKey');
+
 	const { mutate: createTodo, isPending: isCreating } = useMutation({
-		mutationKey: ["createTodo"],
-		mutationFn: async (e: React.FormEvent) => {
-			e.preventDefault();
-			try {
-				const res = await fetch(BASE_URL + `/todos`, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({ body: newTodo }),
-				});
-				const data = await res.json();
+  	mutationKey: ["createTodo"],
+  	mutationFn: async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(BASE_URL + `/todos`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "sessionKey": sessionKey || "", // Send session key in Authorization header
+        },
+        body: JSON.stringify({ body: newTodo }),
+      });
 
-				if (!res.ok) {
-					throw new Error(data.error || "Something went wrong");
-				}
+      const data = await res.json();
 
-				setNewTodo("");
-				return data;
-			} catch (error: any) {
-				throw new Error(error);
-			}
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["todos"] });
-		},
-		onError: (error: any) => {
-			alert(error.message);
-		},
-	});
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      setNewTodo("");
+      return data;
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["todos"] });
+  },
+  onError: (error: any) => {
+    alert(error.message);
+  },
+});
 
 	return (
-		<form onSubmit={createTodo}>
+		<><form onSubmit={createTodo}>
 			<Flex gap={2}>
 				<Input
 					type='text'
 					value={newTodo}
 					onChange={(e) => setNewTodo(e.target.value)}
-					ref={(input) => input && input.focus()}
-				/>
+					ref={(input) => input && input.focus()} />
 				<Button
 					mx={2}
 					type='submit'
@@ -62,6 +68,8 @@ const TodoForm = () => {
 				</Button>
 			</Flex>
 		</form>
+		<Link to="/todokanban">
+			<button className="buttonkanban" >Kanban View </button> </Link></>
 	);
 };
 export default TodoForm;
